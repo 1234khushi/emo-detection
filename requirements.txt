@@ -1,0 +1,7 @@
+streamlit
+sounddevice
+scipy
+librosa
+numpy
+scikit-learn
+xgboost

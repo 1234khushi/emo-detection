@@ -1,3 +1,7 @@
+import librosa
+import numpy as np
+
+
 def extract_features(file_path):
 
     audio, sample_rate = librosa.load(file_path, duration=3, offset=0.5)
@@ -11,5 +15,3 @@ def extract_features(file_path):
     features = np.hstack([mfcc, chroma, mel])
 
     return features
-
-    # https://github.com/1234khushi/emo-detection.git

@@ -1,8 +1,6 @@
 import os
 import pickle
 from utils.feature_extraction import extract_features
-from utils.prediction import final_prediction
-
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -11,6 +9,8 @@ gender_le = pickle.load(open(os.path.join(BASE_DIR, "models/label_encoder.pkl"),
 
 emotion_model = pickle.load(open(os.path.join(BASE_DIR, "models/emotion_model.pkl"), "rb"))
 emotion_le = pickle.load(open(os.path.join(BASE_DIR, "models/emotion_label_encoder.pkl"), "rb"))
+
+
 def final_prediction(file_path):
 
     features = extract_features(file_path)

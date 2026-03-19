@@ -1,10 +1,18 @@
 import streamlit as st
 import tempfile
-import sounddevice as sd
 from scipy.io.wavfile import write
 import os
 
 from utils.prediction import final_prediction
+
+try:
+    import sounddevice as sd
+    RECORDING_AVAILABLE = True
+    RECORDING_ERROR = None
+except Exception as exc:
+    sd = None
+    RECORDING_AVAILABLE = False
+    RECORDING_ERROR = str(exc)
 
 # ------------------ SESSION STATE ------------------
 if "result" not in st.session_state:
@@ -50,24 +58,27 @@ if uploaded_file is not None:
 # ------------------ RECORD SECTION ------------------
 st.header("Record Voice")
 
-if st.button("Start Recording"):
+if not RECORDING_AVAILABLE:
+    st.info("Live recording is unavailable in this environment. Please upload a WAV file instead.")
+else:
+    if st.button("Start Recording"):
 
-    fs = 44100
-    st.info("Recording...")
+        fs = 44100
+        st.info("Recording...")
 
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    sd.wait()
+        recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
+        sd.wait()
 
-    file_path = "recorded.wav"
-    write(file_path, fs, recording)
+        file_path = "recorded.wav"
+        write(file_path, fs, recording)
 
-    st.session_state.recorded_file = file_path
+        st.session_state.recorded_file = file_path
 
-    st.success("Recording complete")
-    st.audio(file_path)
+        st.success("Recording complete")
+        st.audio(file_path)
 
 # Predict button (separate)
-if st.session_state.recorded_file is not None:
+if RECORDING_AVAILABLE and st.session_state.recorded_file is not None:
 
     if st.button("Predict from Recorded Audio", type="primary"):
 

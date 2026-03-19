@@ -1,18 +1,17 @@
 import streamlit as st
 import tempfile
-from scipy.io.wavfile import write
 import os
 
 from utils.prediction import final_prediction
 
-try:
+RECORDING_AVAILABLE = False
+
+
+def load_recording_dependencies():
     import sounddevice as sd
-    RECORDING_AVAILABLE = True
-    RECORDING_ERROR = None
-except Exception as exc:
-    sd = None
-    RECORDING_AVAILABLE = False
-    RECORDING_ERROR = str(exc)
+    from scipy.io.wavfile import write
+
+    return sd, write
 
 # ------------------ SESSION STATE ------------------
 if "result" not in st.session_state:
@@ -27,6 +26,16 @@ st.write("App is running...")  # Debug line
 
 st.sidebar.header("Settings")
 duration = st.sidebar.slider("Recording Duration (seconds)", 2, 5, 3)
+
+with st.sidebar:
+    if st.checkbox("Enable local microphone recording", value=False):
+        try:
+            load_recording_dependencies()
+            RECORDING_AVAILABLE = True
+            st.success("Microphone recording is available in this environment.")
+        except Exception:
+            RECORDING_AVAILABLE = False
+            st.info("Microphone recording is unavailable here. Use WAV upload instead.")
 
 # ------------------ UPLOAD SECTION ------------------
 st.header("Upload Audio")
@@ -62,6 +71,11 @@ if not RECORDING_AVAILABLE:
     st.info("Live recording is unavailable in this environment. Please upload a WAV file instead.")
 else:
     if st.button("Start Recording"):
+        try:
+            sd, write = load_recording_dependencies()
+        except Exception as exc:
+            st.error(f"Recording is unavailable in this environment: {exc}")
+            st.stop()
 
         fs = 44100
         st.info("Recording...")
